@@ -1,0 +1,89 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: nextcloud-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nextcloud
+      POSTGRES_USER: nextcloud
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - /mnt/data/pgdata:/var/lib/postgresql/data
+    command:
+      - postgres
+      - -c
+      - max_connections=100
+      - -c
+      - shared_buffers=256MB
+      - -c
+      - work_mem=4MB
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nextcloud"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nextcloud:
+    image: nextcloud:30-apache
+    container_name: nextcloud-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_DB: nextcloud
+      POSTGRES_USER: nextcloud
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      NEXTCLOUD_ADMIN_USER: admin
+      NEXTCLOUD_ADMIN_PASSWORD: ${NEXTCLOUD_ADMIN_PASSWORD}
+      NEXTCLOUD_TRUSTED_DOMAINS: ${DOMAIN}
+      OVERWRITEPROTOCOL: https
+      OVERWRITECLIURL: https://${DOMAIN}
+      TRUSTED_PROXIES: 172.16.0.0/12
+      OBJECTSTORE_S3_BUCKET: ${S3_BUCKET}
+      OBJECTSTORE_S3_KEY: ${S3_ACCESS_KEY}
+      OBJECTSTORE_S3_SECRET: ${S3_SECRET_KEY}
+      OBJECTSTORE_S3_HOST: ${S3_HOSTNAME}
+      OBJECTSTORE_S3_PORT: 443
+      OBJECTSTORE_S3_SSL: "true"
+      OBJECTSTORE_S3_USEPATH_STYLE: "true"
+      OBJECTSTORE_S3_REGION: ${S3_REGION}
+      OBJECTSTORE_S3_AUTOCREATE: "false"
+    volumes:
+      - nextcloud-app:/var/www/html
+      - ./nextcloud-config/custom.config.php:/var/www/html/config/custom.config.php:ro
+      # upload_tmp_dir points here — see nextcloud-config/custom.config.php.
+      - /mnt/data/nextcloud-tmp:/mnt/data/nextcloud-tmp
+
+  cron:
+    image: nextcloud:30-apache
+    container_name: nextcloud-cron
+    restart: unless-stopped
+    depends_on:
+      - nextcloud
+    volumes:
+      - nextcloud-app:/var/www/html
+      - /mnt/data/nextcloud-tmp:/mnt/data/nextcloud-tmp
+    entrypoint: /cron.sh
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy
+    restart: unless-stopped
+    environment:
+      # Caddy substitutes {$DOMAIN} in the Caddyfile from this value at startup.
+      DOMAIN: ${DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  nextcloud-app:
+  caddy-data:
+  caddy-config:

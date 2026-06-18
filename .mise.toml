@@ -1,0 +1,5 @@
+[tools]
+opentofu = "1.8"
+sops = "latest"
+age = "latest"
+hcloud = "latest"

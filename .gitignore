@@ -1,3 +1,45 @@
+# OpenTofu / Terraform
+**/.terraform/
+**/.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+!*.tfvars.example
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Secrets — never commit plaintext. Only the `.enc.yaml` SOPS-encrypted file is allowed.
+secrets/*.yaml
+!secrets/*.enc.yaml
+!secrets/*.example.yaml
+
+# age private keys — the private key lives at ~/.config/sops/age/keys.txt on operator's laptop.
+# If anyone ever adds one to the repo, block it.
+*.age
+age-keys.txt
+keys.txt
+
+# SSH keys
+*.pem
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+
+# OS
 .DS_Store
 Thumbs.db
+
+# Editors
+.vscode/
+.idea/
 *.swp
+*~
+
+# Riptide artifacts (cloud-synced)
+.humanlayer/tasks/

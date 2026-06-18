@@ -1,0 +1,14 @@
+# Copy this to `terraform.tfvars` (gitignored) and fill in real values.
+#
+# Only non-secret values go here. Secrets live in secrets/family-cloud.enc.yaml
+# (SOPS-encrypted with your age keypair — see PREREQUISITES.md §5).
+
+# Required — your laptop's SSH public key.
+# Get with: cat ~/.ssh/id_ed25519.pub
+operator_ssh_pubkey = "ssh-ed25519 AAAA... your@laptop"
+
+# Optional overrides (defaults in variables.tf):
+# server_type     = "cx22"
+# hcloud_location = "fsn1"
+# domain          = "stow.mcgeer.dev"
+# volume_size_gb  = 20

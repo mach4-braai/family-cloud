@@ -1,0 +1,15 @@
+# {$DOMAIN} is substituted by Caddy at startup from the caddy container's
+# environment (wired through .env → docker-compose → caddy.environment).
+{$DOMAIN} {
+    reverse_proxy nextcloud:80
+    header Strict-Transport-Security "max-age=31536000"
+
+    redir /.well-known/carddav /remote.php/dav 301
+    redir /.well-known/caldav /remote.php/dav 301
+
+    encode gzip zstd
+
+    request_body {
+        max_size 10GB
+    }
+}

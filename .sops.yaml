@@ -1,0 +1,9 @@
+# SOPS configuration — tells sops which keys to use for which files.
+#
+# PLACEHOLDER: replace <AGE_PUBLIC_KEY> with the output of `age-keygen` (see
+# PREREQUISITES.md §5). Public keys start with `age1...` — safe to commit.
+# The matching private key stays at ~/.config/sops/age/keys.txt on operator's laptop.
+
+creation_rules:
+  - path_regex: secrets/.*\.enc\.yaml$
+    age: <AGE_PUBLIC_KEY>
